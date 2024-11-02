@@ -18,7 +18,7 @@ func NewProductService(repo repository.ProductRepositoryDB) *ProductService {
 
 func (cs *ProductService) CreateDataProduct(item_code string, name string, category_id int, location_id int, price int, stock int) error {
 	if name == "" {
-		return errors.New("username tidak boleh kosong")
+		return errors.New("name cannot be empty")
 	}
 
 	product := model.Item{
@@ -30,12 +30,15 @@ func (cs *ProductService) CreateDataProduct(item_code string, name string, categ
 		Stock:      stock,
 	}
 
+	// Attempt to create the product
 	err := cs.RepoProduct.Create(&product)
 	if err != nil {
-		fmt.Println("Error :", err)
+		// Log the error
+		fmt.Println("Error while creating product:", err)
+		return errors.New("failed to create product") // Return a generic error message
 	}
 
-	fmt.Println("berhasil input data Admin dengan id ", product.ID)
-
+	// Print success message if creation is successful
+	fmt.Println("Successfully created product with ID:", product.ID)
 	return nil
 }

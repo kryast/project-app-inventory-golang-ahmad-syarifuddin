@@ -1,0 +1,8 @@
+{
+    "ItemCode": "P001",
+    "Name": "Hp 1",
+    "CategoryId": 1,
+    "LocationId": 1,
+    "Price": 500000,
+    "Stock": 12
+}
