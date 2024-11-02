@@ -15,7 +15,6 @@ import (
 func UpdateProduct(db *sql.DB) {
 	var item model.Item
 
-	// Read input from body.json
 	file, err := os.Open("body.json")
 	if err != nil {
 		utils.SendErrorResponse("Error opening JSON file: "+err.Error(), nil)
@@ -23,7 +22,6 @@ func UpdateProduct(db *sql.DB) {
 	}
 	defer file.Close()
 
-	// Using io.ReadAll
 	data, err := io.ReadAll(file)
 	if err != nil {
 		utils.SendErrorResponse("Error reading JSON file: "+err.Error(), nil)
@@ -36,23 +34,37 @@ func UpdateProduct(db *sql.DB) {
 		return
 	}
 
-	// Call the service to update the item
+	// Check if CategoryId and LocationId are valid
+	categoryRepo := repository.NewCategoryRepository(db)
+	locationRepo := repository.NewLocationRepository(db)
+
+	if _, err := categoryRepo.FindByID(item.CategoryId); err != nil {
+		utils.SendErrorResponse("Invalid CategoryId: "+err.Error(), nil)
+		return
+	}
+
+	if _, err := locationRepo.FindByID(item.LocationId); err != nil {
+		utils.SendErrorResponse("Invalid LocationId: "+err.Error(), nil)
+		return
+	}
+
+	// Update the item
 	repo := repository.NewProductRepository(db)
 	itemService := service.NewProductService(repo)
 
-	if err := itemService.UpdateDataProduct(item.ItemCode, item.Name, item.CategoryId, item.LocationId, item.Price, item.Stock); err != nil {
+	if err := itemService.UpdateDataProduct(item); err != nil {
 		utils.SendErrorResponse("Error while updating item: "+err.Error(), nil)
 		return
 	}
 
-	// Output success response
-	responseData := model.Response{
+	// Prepare and send response
+	response := model.Response{
 		StatusCode: 200,
 		Message:    "Update successful",
 		Data:       item,
 	}
 
-	if err := utils.PrintJSONResponse(responseData); err != nil {
+	if err := utils.PrintJSONResponse(response); err != nil {
 		utils.SendErrorResponse("Error marshaling response to JSON: "+err.Error(), nil)
 	}
 }

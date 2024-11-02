@@ -13,7 +13,7 @@ import (
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/utils"
 )
 
-func SearchItemsByItemCode(db *sql.DB) {
+func SearchItem(db *sql.DB) {
 	var request struct {
 		SearchQuery string `json:"search_query"`
 	}

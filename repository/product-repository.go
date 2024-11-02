@@ -28,10 +28,9 @@ func (r *productRepository) Create(item *model.Item) error {
 	return err
 }
 
-func (r *productRepository) Update(item *model.Item) error {
-	// Implementation for updating an existing product
-	_, err := r.db.Exec("UPDATE item SET item_code = $1, name = $2, category_id = $3, location_id = $4, price = $5, stock = $6 WHERE id = $7",
-		item.ItemCode, item.Name, item.CategoryId, item.LocationId, item.Price, item.Stock, item.ID)
+func (repo *productRepository) Update(item *model.Item) error {
+	query := `UPDATE item SET item_code = $1, name = $2, category_id = $3, location_id = $4, price = $5, stock = $6 WHERE id = $7`
+	_, err := repo.db.Exec(query, item.ItemCode, item.Name, item.CategoryId, item.LocationId, item.Price, item.Stock, item.ID)
 	return err
 }
 

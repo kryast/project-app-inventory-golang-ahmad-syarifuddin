@@ -1,6 +1,6 @@
 <!-- create JSON -->
 {
-    "ItemCode": "P001",
+    "ItemCode": "P101",
     "Name": "Hp 1",
     "CategoryId": 1,
     "LocationId": 1,
@@ -126,4 +126,9 @@
 <!-- search item by item code -->
 {
     "search_query": "P001"
+}
+
+<!-- search item by item name -->
+{
+    "search_query": "Hp 1"
 }

@@ -12,40 +12,45 @@ import (
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/utils"
 )
 
-func CreateProducts(db *sql.DB) {
-	var products []model.Item
+func CreateProduct(db *sql.DB) {
+	var item model.Item
+
 	file, err := os.Open("body.json")
 	if err != nil {
-		utils.SendErrorResponse("Error reading JSON file: "+err.Error(), nil)
+		utils.SendErrorResponse("Error opening JSON file: "+err.Error(), nil)
 		return
 	}
 	defer file.Close()
 
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&products)
-	if err != nil && err != io.EOF {
+	data, err := io.ReadAll(file)
+	if err != nil {
+		utils.SendErrorResponse("Error reading JSON file: "+err.Error(), nil)
+		return
+	}
+
+	err = json.Unmarshal(data, &item)
+	if err != nil {
 		utils.SendErrorResponse("Error decoding JSON: "+err.Error(), nil)
 		return
 	}
 
+	// Create the item
 	repo := repository.NewProductRepository(db)
-	productService := service.NewProductService(repo)
+	itemService := service.NewProductService(repo)
 
-	for _, product := range products {
-		err := productService.CreateDataProduct(product.ItemCode, product.Name, product.CategoryId, product.LocationId, product.Price, product.Stock)
-		if err != nil {
-			utils.SendErrorResponse("Failed to create product: "+err.Error(), &product)
-			return
-		}
+	if err := itemService.CreateDataProduct(item.ItemCode, item.Name, item.CategoryId, item.LocationId, item.Price, item.Stock); err != nil {
+		utils.SendErrorResponse("Error while creating item: "+err.Error(), nil)
+		return
 	}
 
-	responseData := model.Response{
+	// Prepare and send response
+	response := model.Response{
 		StatusCode: 200,
-		Message:    "All products created successfully",
-		Data:       products,
+		Message:    "Item created successfully",
+		Data:       item,
 	}
 
-	if err := utils.PrintJSONResponse(responseData); err != nil {
-		utils.SendErrorResponse("Error marshaling response: "+err.Error(), nil)
+	if err := utils.PrintJSONResponse(response); err != nil {
+		utils.SendErrorResponse("Error marshaling response to JSON: "+err.Error(), nil)
 	}
 }
