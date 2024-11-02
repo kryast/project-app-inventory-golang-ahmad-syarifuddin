@@ -23,6 +23,16 @@ CREATE TABLE item (
     FOREIGN KEY (location_id) REFERENCES lcoation(id)
 );
 
+CREATE TABLE in_out_product (
+    id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    movement_type VARCHAR(10) NOT NULL CHECK (movement_type IN ('in', 'out')),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES item(id) ON DELETE CASCADE
+);
+
+
 INSERT INTO category(category_name) VALUES 
 ('Elektronik'),
 ('Pakaian');

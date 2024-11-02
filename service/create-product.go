@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/model"
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/repository"
@@ -16,29 +15,40 @@ func NewProductService(repo repository.ProductRepositoryDB) *ProductService {
 	return &ProductService{RepoProduct: repo}
 }
 
-func (cs *ProductService) CreateDataProduct(item_code string, name string, category_id int, location_id int, price int, stock int) error {
+func (cs *ProductService) CreateDataProduct(itemCode, name string, categoryId, locationId, price, stock int) error {
 	if name == "" {
-		return errors.New("name cannot be empty")
+		return errors.New("product name cannot be empty")
 	}
 
 	product := model.Item{
-		ItemCode:   item_code,
+		ItemCode:   itemCode,
 		Name:       name,
-		CategoryId: category_id,
-		LocationId: location_id,
+		CategoryId: categoryId,
+		LocationId: locationId,
 		Price:      price,
 		Stock:      stock,
 	}
 
-	// Attempt to create the product
-	err := cs.RepoProduct.Create(&product)
-	if err != nil {
-		// Log the error
-		fmt.Println("Error while creating product:", err)
-		return errors.New("failed to create product") // Return a generic error message
+	return cs.RepoProduct.Create(&product)
+}
+
+func (cs *ProductService) UpdateDataProduct(itemCode, name string, categoryId, locationId, price, stock int) error {
+	if name == "" {
+		return errors.New("product name cannot be empty")
 	}
 
-	// Print success message if creation is successful
-	fmt.Println("Successfully created product with ID:", product.ID)
-	return nil
+	product := model.Item{
+		ItemCode:   itemCode,
+		Name:       name,
+		CategoryId: categoryId,
+		LocationId: locationId,
+		Price:      price,
+		Stock:      stock,
+	}
+
+	return cs.RepoProduct.Update(&product)
+}
+
+func (s *ProductService) SearchItems(searchQuery string) ([]model.Item, error) {
+	return s.RepoProduct.SearchItems(searchQuery)
 }

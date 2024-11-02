@@ -3,72 +3,49 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"io"
 	"os"
 
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/model"
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/repository"
 	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/service"
+	"github.com/kryast/project-app-inventory-golang-ahmad-syarifuddin/utils"
 )
 
-const inputFileName = "body.json"
+func CreateProducts(db *sql.DB) {
+	var products []model.Item
+	file, err := os.Open("body.json")
+	if err != nil {
+		utils.SendErrorResponse("Error reading JSON file: "+err.Error(), nil)
+		return
+	}
+	defer file.Close()
 
-func CreateProduct(db *sql.DB) {
-	var product model.Item
-
-	if err := readJSONFile(inputFileName, &product); err != nil {
-		sendErrorResponse("Error reading JSON file: " + err.Error())
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&products)
+	if err != nil && err != io.EOF {
+		utils.SendErrorResponse("Error decoding JSON: "+err.Error(), nil)
 		return
 	}
 
 	repo := repository.NewProductRepository(db)
 	productService := service.NewProductService(repo)
 
-	if err := productService.CreateDataProduct(product.ItemCode, product.Name, product.CategoryId, product.LocationId, product.Price, product.Stock); err != nil {
-
-		sendErrorResponse("Error while creating product: " + err.Error())
-		return
-	} else {
-
-		response := model.Response{
-			StatusCode: 200,
-			Message:    "create success",
-			Data:       product,
-		}
-
-		if err := printJSONResponse(response); err != nil {
-			sendErrorResponse("Error marshaling response: " + err.Error())
+	for _, product := range products {
+		err := productService.CreateDataProduct(product.ItemCode, product.Name, product.CategoryId, product.LocationId, product.Price, product.Stock)
+		if err != nil {
+			utils.SendErrorResponse("Failed to create product: "+err.Error(), &product)
+			return
 		}
 	}
-}
 
-func readJSONFile(fileName string, v interface{}) error {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return err
+	responseData := model.Response{
+		StatusCode: 200,
+		Message:    "All products created successfully",
+		Data:       products,
 	}
-	defer file.Close()
 
-	decoder := json.NewDecoder(file)
-	return decoder.Decode(v)
-}
-
-func printJSONResponse(response model.Response) error {
-	jsonData, err := json.MarshalIndent(response, "", "  ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(jsonData))
-	return nil
-}
-
-func sendErrorResponse(message string) {
-	response := model.Response{
-		StatusCode: 400,
-		Message:    message,
-		Data:       model.Item{},
-	}
-	if err := printJSONResponse(response); err != nil {
-		fmt.Println("Error marshaling error response:", err)
+	if err := utils.PrintJSONResponse(responseData); err != nil {
+		utils.SendErrorResponse("Error marshaling response: "+err.Error(), nil)
 	}
 }

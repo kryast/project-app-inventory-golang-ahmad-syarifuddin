@@ -1,7 +1,7 @@
 package model
 
 type Item struct {
-	ID         uint16
+	ID         int
 	ItemCode   string
 	Name       string
 	CategoryId int
@@ -11,14 +11,14 @@ type Item struct {
 }
 
 type Category struct {
-	ID   uint16
+	ID   int
 	Name string
 }
 
 type Location struct {
-	ID           uint16
-	Address      string
-	City         string
-	Province     string
-	ItemLocation string
+	ID           int    `json:"id"`
+	Address      string `json:"address"`
+	City         string `json:"city"`
+	Province     string `json:"province"`
+	ItemPosition string `json:"item_position"`
 }
